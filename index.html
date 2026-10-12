@@ -20,6 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#eef2f7; --card:#ffffff; --ink:#14213d; --muted:#5f6b85; --line:#e2e8f2;
@@ -738,6 +739,7 @@ function boot(){
     opts($('f-det'), d.personnes.filter(function(p){return p!=='Foyer';}), d.user); opts($('f-src'), d.sources, 'Don');
     $('who').textContent = d.appareil? '📱 '+d.user+' · changer' : 'Connecté : '+d.user;
     $('who').style.cursor = d.appareil? 'pointer':'';
+    if(d.fuseau && S.perms && S.perms.admin && !S.tzWarned){ S.tzWarned=1; setTimeout(function(){ toast('⚠ Fuseau horaire incorrect ('+d.fuseau+') : mets Douala dans Apps Script › ⚙ Paramètres du projet, puis relance installer.', true); }, 1500); }
     S.appareil=d.appareil||''; ['rc-who','dp-who'].forEach(function(i){ $(i).innerHTML = d.appareil? '<span>👤 C\'est <b>'+esc(d.user)+'</b> qui note</span><button type="button" class="chg">Ce n\'est pas moi</button>' : ''; $(i).classList.toggle('hidden', !d.appareil); });
     opts($('rc-de'), d.personnes.filter(function(p){ return p!=='Foyer' && p!==d.user; }), 'Thierry'); opts($('rc-cat'), d.categories.map(function(c){return c.nom;}), 'Achats ménage'); $('rc-date').value=d.today;
     var groups={}, catOpts=[];
