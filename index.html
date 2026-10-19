@@ -21,6 +21,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#eef2f7; --card:#ffffff; --ink:#14213d; --muted:#5f6b85; --line:#e2e8f2;
@@ -135,6 +136,14 @@ details summary{cursor:pointer;color:var(--brand);font-weight:700;padding:5px 0}
 .setup{position:fixed;inset:0;background:var(--bg);z-index:30;overflow:auto;padding:0 16px}
 .lockscr{background:linear-gradient(160deg,#0e7c66,#1f3c88);z-index:40}
 .lockico{width:74px;height:74px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:36px;background:#e8f5f1;box-shadow:0 0 0 8px rgba(14,124,102,.12)}
+.cam{position:fixed;inset:0;z-index:60;background:#000;display:flex;flex-direction:column}
+.cam video{flex:1;width:100%;object-fit:cover;background:#000}
+.cam-hint{position:absolute;top:18px;left:0;right:0;text-align:center;color:#fff;font-weight:700;font-size:14px;text-shadow:0 1px 4px #000}
+.cam-bar{display:flex;align-items:center;justify-content:space-around;padding:18px 10px 28px;background:#000}
+.cam-shot{width:74px;height:74px;border-radius:50%;border:5px solid rgba(255,255,255,.55);background:#fff;cursor:pointer;box-shadow:0 0 0 3px #000 inset}
+.cam-shot:active{transform:scale(.94)}
+.cam-s{background:transparent;border:0;color:#fff;font-size:24px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;min-width:70px}
+.cam-s span{font-size:12px;font-weight:700}
 .pickgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
 .pickgrid button{border:0;border-radius:18px;padding:16px 8px;font:inherit;font-size:16px;font-weight:800;color:#fff;cursor:pointer;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;gap:4px}
 .pickgrid button span{font-size:30px}
@@ -250,7 +259,7 @@ details summary{cursor:pointer;color:var(--brand);font-weight:600;padding:4px 0}
     <div id="d-dette-wrap" class="hidden"><label for="d-dette">Dette concernée</label><select id="d-dette"></select></div>
     <div id="d-fonds-wrap"><label for="d-fonds">Payé avec</label><select id="d-fonds" class="fsel"></select></div>
     <label for="d-date">Date</label><input id="d-date" type="date">
-    <label class="photo-btn" for="d-photo">📷 <span>Photo de la facture (facultatif)</span><input type="file" accept="image/*" capture="environment" id="d-photo" class="phin" hidden></label>
+    <label class="photo-btn" for="d-photo">📷 <span>Photo de la facture (facultatif)</span><input type="file" accept="image/*" id="d-photo" class="phin" hidden></label>
     <button class="btn" id="d-save">Enregistrer la dépense</button>
   </div>
 
@@ -321,7 +330,7 @@ details summary{cursor:pointer;color:var(--brand);font-weight:600;padding:4px 0}
     </div>
     <label for="c-fonds">Payé avec</label><select id="c-fonds" class="fsel"></select>
     <label for="c-quand">Date et heure</label><input id="c-quand" type="datetime-local">
-    <label class="photo-btn" for="c-photo">📷 <span>Photo de la facture (facultatif)</span><input type="file" accept="image/*" capture="environment" id="c-photo" class="phin" hidden></label>
+    <label class="photo-btn" for="c-photo">📷 <span>Photo de la facture (facultatif)</span><input type="file" accept="image/*" id="c-photo" class="phin" hidden></label>
     <button class="btn" id="c-save">⛽ Enregistrer la recharge</button>
   </div>
   <div class="hidden" id="c-stats">
@@ -430,7 +439,7 @@ details summary{cursor:pointer;color:var(--brand);font-weight:600;padding:4px 0}
         <div class="row"><div><label for="f-det">Détenu par</label><select id="f-det"></select></div><div><label for="f-quand">Date et heure</label><input id="f-quand" type="datetime-local"></div></div>
         <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px;color:var(--ink)"><input type="checkbox" id="f-isrev" style="width:20px;min-height:20px"> C'est un revenu (argent reçu, pas un simple retrait)</label>
         <div id="f-src-wrap" class="hidden"><label for="f-src">Source du revenu</label><select id="f-src"></select></div>
-        <label class="photo-btn" for="f-photo">📷 <span>Photo du ticket de retrait (facultatif)</span><input type="file" accept="image/*" capture="environment" id="f-photo" class="phin" hidden></label>
+        <label class="photo-btn" for="f-photo">📷 <span>Photo du ticket de retrait (facultatif)</span><input type="file" accept="image/*" id="f-photo" class="phin" hidden></label>
         <button class="btn" id="f-save">Ouvrir le fonds</button>
       </details>
     </div>
@@ -472,7 +481,7 @@ details summary{cursor:pointer;color:var(--brand);font-weight:600;padding:4px 0}
       <label for="g-montant">Montant donné (FCFA)</label><input id="g-montant" class="amount" inputmode="numeric" placeholder="0">
       <label for="g-fonds">Payé avec</label><select id="g-fonds" class="fsel"></select>
       <label for="g-quand">Date et heure</label><input id="g-quand" type="datetime-local">
-      <label class="photo-btn" for="g-photo">📷 <span>Photo de la facture (facultatif)</span><input type="file" accept="image/*" capture="environment" id="g-photo" class="phin" hidden></label>
+      <label class="photo-btn" for="g-photo">📷 <span>Photo de la facture (facultatif)</span><input type="file" accept="image/*" id="g-photo" class="phin" hidden></label>
       <button class="btn" id="g-save">Enregistrer</button>
     </div>
     <div class="card" id="gPretsCard"><h2><span class="hi" style="background:#fdeed4">🤝</span>Prêts à récupérer</h2><div id="gPrets"></div></div>
@@ -589,7 +598,16 @@ details summary{cursor:pointer;color:var(--brand);font-weight:600;padding:4px 0}
   <button data-v="dettes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 13v4M10 15h4"/></svg>Échéances</button>
   <button data-v="scen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 15l4-5 3 3 5-6"/></svg>Scénarios</button>
 </nav>
-<input type="file" accept="image/*" capture="environment" id="ph-later" hidden>
+<input type="file" accept="image/*" id="ph-later" hidden>
+<div id="cam" class="cam hidden">
+  <video id="cam-v" playsinline autoplay muted></video>
+  <div class="cam-hint">Cadre bien la facture, puis touche le bouton blanc</div>
+  <div class="cam-bar">
+    <button type="button" id="cam-gal" class="cam-s">🖼️<span>Galerie</span></button>
+    <button type="button" id="cam-shot" class="cam-shot" aria-label="Prendre la photo"></button>
+    <button type="button" id="cam-x" class="cam-s">✕<span>Annuler</span></button>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 <div class="loading" id="loading"><div class="spin"></div></div>
 
@@ -754,7 +772,7 @@ function boot(){
     opts($('d-mode'), d.modes, 'Espèces'); opts($('r-source'), d.sources); opts($('c-veh'), (d.vehicules&&d.vehicules.length)?d.vehicules:['Voiture']);
     opts($('d-dette'), [''].concat(d.dettes));
     ['d-date','r-date','a-date'].forEach(function(i){ $(i).value=d.today; });
-    loadRecents();
+    loadRecents(); restaurerBrouillon();
   });
 }
 ['d-montant','r-montant','a-montant','c-montant','c-km'].forEach(function(i){ amountInput($(i)); });
@@ -775,7 +793,7 @@ $('d-save').onclick=function(){
   if(!o.montant) return toast('Indique le montant',true);
   if(!o.categorie) return toast('Choisis une catégorie',true);
   this.disabled=true; var b=this;
-  withPhoto(o,'d-photo',o.categorie,o.montant).then(function(o){ return run('addDepense',o); }).then(function(r){ toast(r.message); $('d-montant').value=''; $('d-desc').value=''; clearPhotos(); loadRecents(); if(o.fonds) refreshFonds(); if(o.avance) call('getInit').then(function(d){ S.init.mesAvances=d.mesAvances; applyPerms(d); loadRecents(); }); })
+  withPhoto(o,'d-photo',o.categorie,o.montant).then(function(o){ return run('addDepense',o); }).then(function(r){ toast(r.message); $('d-montant').value=''; $('d-desc').value=''; clearPhotos(); try{ localStorage.removeItem('bf_draft'); }catch(x){} loadRecents(); if(o.fonds) refreshFonds(); if(o.avance) call('getInit').then(function(d){ S.init.mesAvances=d.mesAvances; applyPerms(d); loadRecents(); }); })
     .finally(function(){ b.disabled=false; });
 };
 $('r-save').onclick=function(){
@@ -1330,7 +1348,7 @@ function renderMissions(d){
     h += '<div class="chips mcats" data-i="'+i+'">'+d.categories.map(function(c,k){ return '<button class="chip'+(k===0?' on':'')+'" data-c="'+esc(c)+'">'+MCAT_ICON[c]+' '+esc(c)+'</button>'; }).join('')+'</div>'
       +'<div class="row" style="margin-top:8px"><div><label>Montant</label><input class="md-m" data-i="'+i+'" inputmode="numeric" placeholder="0"></div><div><label>Date et heure</label><input class="md-q" data-i="'+i+'" type="datetime-local" value="'+nowLocal()+'"></div></div>'
       +'<label>Trajet / description</label><input class="md-d" data-i="'+i+'" placeholder="ex. Douala → Édéa (bus), hôtel X…">'
-      +'<label class="photo-btn" for="md-photo-'+i+'">📷 <span>Photo du reçu (facultatif)</span><input type="file" accept="image/*" capture="environment" id="md-photo-'+i+'" class="phin" hidden></label>'
+      +'<label class="photo-btn" for="md-photo-'+i+'">📷 <span>Photo du reçu (facultatif)</span><input type="file" accept="image/*" id="md-photo-'+i+'" class="phin" hidden></label>'
       +'<button class="btn small alt md-go" data-i="'+i+'" style="margin-top:8px">Ajouter la dépense</button>';
     // jour par jour
     if(x.parJour.length){
@@ -1408,7 +1426,7 @@ function phIcons(url, fn, id, lib, montant){
 }
 document.addEventListener('click', function(e){
   var b=e.target.closest && e.target.closest('.phadd'); if(!b) return;
-  S.phTarget={fn:b.dataset.fn, id:b.dataset.id, lib:b.dataset.lib, m:+b.dataset.m}; $('ph-later').click();
+  S.phTarget={fn:b.dataset.fn, id:b.dataset.id, lib:b.dataset.lib, m:+b.dataset.m}; camOpen('ph-later');
 });
 $('ph-later').addEventListener('change', function(){
   var f=this.files[0], t=S.phTarget; if(!f||!t) return; this.value='';
@@ -2044,6 +2062,50 @@ S.lastAct=Date.now();
 ['click','keydown','touchstart'].forEach(function(ev){ document.addEventListener(ev, function(){
   if(S.pwd && Date.now()-S.lastAct > 10*60*1000){ verrouiller(); return; } S.lastAct=Date.now(); }, true); });
 document.addEventListener('visibilitychange', function(){ if(!document.hidden && S.pwd && Date.now()-S.lastAct > 10*60*1000) verrouiller(); });
+
+/* ---------- appareil photo DANS l'appli (le téléphone ne ferme plus l'appli) ---------- */
+var CAM={stream:null, target:null};
+function camOk(){ return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) && window.isSecureContext; }
+function photoPrise(inputId, blob){
+  if(inputId==='ph-later'){ var t=S.phTarget; if(!t) return;
+    stampPhoto(blob, stampLines(t.lib, t.m)).then(function(u){ return run('addPhoto', t.fn, t.id, u, {libelle:t.lib, montant:t.m}); })
+      .then(function(r){ toast(r.message); if(!$('v-saisir').classList.contains('hidden')) loadRecents(); }).catch(function(){}); return; }
+  S.photos[inputId]=blob;
+  var i=$(inputId), l=i.parentNode, sp=l.querySelector('span'); sp.dataset.t=sp.dataset.t||sp.textContent; sp.textContent='Photo prête – sera horodatée à l\'enregistrement';
+  var im=l.querySelector('img')||document.createElement('img'); im.src=URL.createObjectURL(blob); l.appendChild(im);
+}
+function camStop(){ if(CAM.stream){ CAM.stream.getTracks().forEach(function(t){ t.stop(); }); CAM.stream=null; } $('cam').classList.add('hidden'); }
+function camOpen(inputId){
+  CAM.target=inputId; brouillon();
+  if(!camOk()){ $(inputId).click(); return; }
+  navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ideal:'environment'}, width:{ideal:1920}, height:{ideal:1080} }, audio:false })
+    .then(function(st){ CAM.stream=st; $('cam-v').srcObject=st; $('cam').classList.remove('hidden'); })
+    .catch(function(){ toast('Caméra non disponible ici : choisis une photo', true); $(inputId).click(); });
+}
+document.addEventListener('click', function(e){
+  var lb=e.target.closest && e.target.closest('label.photo-btn'); if(!lb) return;
+  var inp=lb.querySelector('input.phin'); if(!inp) return;
+  if(e.target===inp) return;
+  e.preventDefault(); camOpen(inp.id);
+}, true);
+$('cam-shot').onclick=function(){
+  var v=$('cam-v'); if(!v.videoWidth) return;
+  var cv=document.createElement('canvas'); cv.width=v.videoWidth; cv.height=v.videoHeight; cv.getContext('2d').drawImage(v,0,0);
+  cv.toBlob(function(b){ var t=CAM.target; camStop(); if(b) photoPrise(t, b); }, 'image/jpeg', 0.9);
+};
+$('cam-x').onclick=camStop;
+$('cam-gal').onclick=function(){ var t=CAM.target; camStop(); $(t).click(); };
+/* ---------- brouillon : si le téléphone ferme quand même l'appli, la saisie revient ---------- */
+var BR_IDS=['d-montant','d-cat','d-desc','d-benef','d-mode','d-date','c-montant','c-litres','c-km','c-station'];
+function brouillon(){ try{ var o={t:Date.now(), seg:(document.querySelector('#segSaisie button.on')||{}).dataset && document.querySelector('#segSaisie button.on').dataset.k, v:{}};
+  BR_IDS.forEach(function(i){ if($(i)) o.v[i]=$(i).value; }); sessionStorage.setItem('bf_draft', JSON.stringify(o)); localStorage.setItem('bf_draft', JSON.stringify(o)); }catch(e){} }
+function restaurerBrouillon(){
+  var o=null; try{ o=JSON.parse(localStorage.getItem('bf_draft')||'null'); localStorage.removeItem('bf_draft'); sessionStorage.removeItem('bf_draft'); }catch(e){}
+  if(!o || Date.now()-o.t > 20*60*1000) return;
+  var some=false; Object.keys(o.v).forEach(function(i){ if($(i) && o.v[i]){ $(i).value=o.v[i]; some=true; } });
+  if(o.seg){ var b=document.querySelector('#segSaisie button[data-k="'+o.seg+'"]'); if(b && !b.classList.contains('hidden')) b.click(); }
+  if(some) toast('↩️ Ta saisie en cours a été retrouvée : reprends la photo puis enregistre.');
+}
 
 /* ---------- téléphone de la maison : « Qui es-tu ? » ---------- */
 var PICK_C=['#0e7c66','#2d7dd2','#c2185b','#7b1fa2','#ef6c00','#00838f','#5d4037','#455a64'];
