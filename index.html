@@ -22,6 +22,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#eef2f7; --card:#ffffff; --ink:#14213d; --muted:#5f6b85; --line:#e2e8f2;
@@ -599,6 +600,16 @@ details summary{cursor:pointer;color:var(--brand);font-weight:600;padding:4px 0}
   <button data-v="scen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 15l4-5 3 3 5-6"/></svg>Scénarios</button>
 </nav>
 <input type="file" accept="image/*" id="ph-later" hidden>
+<input type="file" accept="image/*" capture="environment" id="ph-cam-native" hidden>
+<div id="camChoice" class="setup hidden" style="background:rgba(10,20,30,.55)"><div class="card" style="max-width:420px;margin:30vh auto 0">
+  <h2><span class="hi" style="background:#fdeed4">📷</span>Photo de la facture</h2>
+  <p class="muted" style="margin-top:-4px" id="cc-msg">Sur ce téléphone, l'appli ne peut pas ouvrir la caméra elle-même.</p>
+  <button class="btn" id="cc-gal" style="margin-top:6px">🖼️ Choisir une photo déjà prise (recommandé)</button>
+  <p class="muted" style="font-size:12.5px;margin:6px 2px 10px">Astuce : prends d'abord la photo avec l'appareil photo du téléphone, puis reviens ici et choisis-la.</p>
+  <button class="btn ghost" id="cc-cam">📸 Ouvrir l'appareil photo du téléphone</button>
+  <p class="muted" style="font-size:12px;margin:6px 2px 0">⚠ Sur certains téléphones, l'appli se ferme pendant la photo : ta saisie sera retrouvée à la réouverture, mais pas la photo.</p>
+  <button class="btn small ghost" id="cc-x" style="margin-top:10px">Annuler</button>
+</div></div>
 <div id="cam" class="cam hidden">
   <video id="cam-v" playsinline autoplay muted></video>
   <div class="cam-hint">Cadre bien la facture, puis touche le bouton blanc</div>
@@ -2065,7 +2076,8 @@ document.addEventListener('visibilitychange', function(){ if(!document.hidden &&
 
 /* ---------- appareil photo DANS l'appli (le téléphone ne ferme plus l'appli) ---------- */
 var CAM={stream:null, target:null};
-function camOk(){ return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) && window.isSecureContext; }
+function dansGoogle(){ try{ return window.self!==window.top || /googleusercontent|script\.google/.test(location.hostname); }catch(e){ return true; } }
+function camOk(){ return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) && window.isSecureContext && !dansGoogle(); }
 function photoPrise(inputId, blob){
   if(inputId==='ph-later'){ var t=S.phTarget; if(!t) return;
     stampPhoto(blob, stampLines(t.lib, t.m)).then(function(u){ return run('addPhoto', t.fn, t.id, u, {libelle:t.lib, montant:t.m}); })
@@ -2077,10 +2089,10 @@ function photoPrise(inputId, blob){
 function camStop(){ if(CAM.stream){ CAM.stream.getTracks().forEach(function(t){ t.stop(); }); CAM.stream=null; } $('cam').classList.add('hidden'); }
 function camOpen(inputId){
   CAM.target=inputId; brouillon();
-  if(!camOk()){ $(inputId).click(); return; }
+  if(!camOk()){ choixPhoto(dansGoogle()?'Avec le lien Google, l\'appli ne peut pas ouvrir la caméra elle-même.':'Sur ce téléphone, l\'appli ne peut pas ouvrir la caméra elle-même.'); return; }
   navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ideal:'environment'}, width:{ideal:1920}, height:{ideal:1080} }, audio:false })
     .then(function(st){ CAM.stream=st; $('cam-v').srcObject=st; $('cam').classList.remove('hidden'); })
-    .catch(function(){ toast('Caméra non disponible ici : choisis une photo', true); $(inputId).click(); });
+    .catch(function(){ choixPhoto('La caméra n\'a pas pu s\'ouvrir dans l\'appli (autorisation refusée ?).'); });
 }
 document.addEventListener('click', function(e){
   var lb=e.target.closest && e.target.closest('label.photo-btn'); if(!lb) return;
@@ -2094,6 +2106,11 @@ $('cam-shot').onclick=function(){
   cv.toBlob(function(b){ var t=CAM.target; camStop(); if(b) photoPrise(t, b); }, 'image/jpeg', 0.9);
 };
 $('cam-x').onclick=camStop;
+function choixPhoto(msg){ $('cc-msg').textContent=msg; $('camChoice').classList.remove('hidden'); }
+$('cc-x').onclick=function(){ $('camChoice').classList.add('hidden'); };
+$('cc-gal').onclick=function(){ $('camChoice').classList.add('hidden'); $(CAM.target).click(); };
+$('cc-cam').onclick=function(){ $('camChoice').classList.add('hidden'); brouillon(); $('ph-cam-native').click(); };
+$('ph-cam-native').addEventListener('change', function(){ var f=this.files[0]; this.value=''; if(f) photoPrise(CAM.target, f); });
 $('cam-gal').onclick=function(){ var t=CAM.target; camStop(); $(t).click(); };
 /* ---------- brouillon : si le téléphone ferme quand même l'appli, la saisie revient ---------- */
 var BR_IDS=['d-montant','d-cat','d-desc','d-benef','d-mode','d-date','c-montant','c-litres','c-km','c-station'];
