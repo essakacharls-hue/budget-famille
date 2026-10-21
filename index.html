@@ -23,6 +23,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#eef2f7; --card:#ffffff; --ink:#14213d; --muted:#5f6b85; --line:#e2e8f2;
@@ -145,6 +146,11 @@ details summary{cursor:pointer;color:var(--brand);font-weight:700;padding:5px 0}
 .cam-shot:active{transform:scale(.94)}
 .cam-s{background:transparent;border:0;color:#fff;font-size:24px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;min-width:70px}
 .cam-s span{font-size:12px;font-weight:700}
+.dfx{position:relative;display:flex;gap:6px;align-items:stretch}
+.dfx .dtxt{flex:1;min-width:0}
+.dfx .dbtn{flex:0 0 auto;border:0;border-radius:12px;background:var(--soft,#eef2f7);font-size:18px;padding:0 12px;cursor:pointer}
+.dfx input.dnat{position:absolute;left:0;bottom:0;width:1px;height:1px;opacity:0;pointer-events:none;border:0;padding:0;min-height:0}
+.dtxt.bad{outline:2px solid #e4572e}
 .pickgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
 .pickgrid button{border:0;border-radius:18px;padding:16px 8px;font:inherit;font-size:16px;font-weight:800;color:#fff;cursor:pointer;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;gap:4px}
 .pickgrid button span{font-size:30px}
@@ -633,7 +639,7 @@ var esc = function(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c)
 var parseNum = function(s){ return parseFloat(String(s||'').replace(/[^\d,.-]/g,'').replace(',','.'))||0; };
 var MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
 var monthLabel = function(ym){ var p=ym.split('-'); return MOIS[+p[1]-1]+' '+p[0]; };
-var dLabel = function(d){ if(!d) return ''; var p=d.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; };
+var dLabel = function(d){ if(!d) return ''; var p=String(d).slice(0,10).split('-'); return p[2]+'/'+p[1]+'/'+String(p[0]).slice(-2); };
 var mLabelShort = function(d){ if(!d) return ''; var p=d.split('-'); return MOIS[+p[1]-1].slice(0,4)+'. '+p[0]; };
 
 /* ---------- connexion au serveur (Apps Script) avec clé personnelle ---------- */
@@ -1423,7 +1429,7 @@ function stampPhoto(file, lignes){
   });
 }
 function stampLines(lib, montant){
-  var d=new Date(), t='🕒 '+pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+'/'+d.getFullYear()+' '+pad2(d.getHours())+':'+pad2(d.getMinutes())+' – '+((S.init&&S.init.user)||'');
+  var d=new Date(), t='🕒 '+pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+'/'+String(d.getFullYear()).slice(-2)+' '+pad2(d.getHours())+':'+pad2(d.getMinutes())+' – '+((S.init&&S.init.user)||'');
   return [t.replace('🕒 ',''), (lib||'')+(montant?' – '+fmt(montant)+' F':'')];
 }
 /** Ajoute o.photo (horodatée) si une photo a été prise dans le champ inputId. */
@@ -1513,7 +1519,7 @@ function quandRel(t){
   if(min<1) return 'à l\'instant';
   if(diff===0) return 'aujourd\'hui à '+hm+(min<60?' (il y a '+min+' min)':'');
   if(diff===1) return 'hier à '+hm;
-  return 'le '+pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+'/'+d.getFullYear()+' à '+hm;
+  return 'le '+pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+'/'+String(d.getFullYear()).slice(-2)+' à '+hm;
 }
 /* ---------- état de la connexion au serveur (vérifié toutes les 2 minutes) ---------- */
 S.srv={ok:null, t:0, err:''};
@@ -2014,7 +2020,7 @@ function planCalc(px){
   while(k<n && g<800){ if(p.jours[(d.getDay()+6)%7]){ k++; last=new Date(d); } d.setDate(d.getDate()+1); g++; }
   var surplus=m-n*p.parJour;
   out.innerHTML='<div class="pbox">'+(n? '💡 <b>'+fmt(m)+' F</b> à <b>'+fmt(p.parJour)+' F/jour</b>'+(p.detail.length>1?' ('+p.detail.map(function(x){ return esc(x.libelle||'?')+' '+fmt(x.montant); }).join(' + ')+')':'')
-    +' couvrent <b>'+n+' jour'+(n>1?'s':'')+'</b>.<br>L\'argent finit le <b>'+JL[(last.getDay()+6)%7]+' '+last.toLocaleDateString('fr-FR',{day:'numeric',month:'long'})+'</b>'
+    +' couvrent <b>'+n+' jour'+(n>1?'s':'')+'</b>.<br>L\'argent finit le <b>'+JL[(last.getDay()+6)%7]+' '+pad2(last.getDate())+'/'+pad2(last.getMonth()+1)+'/'+String(last.getFullYear()).slice(-2)+'</b>'
     +(surplus>0.5?' et il restera <b>'+fmt(surplus)+' F</b>.':'.') : 'Le montant ne couvre même pas un jour ('+fmt(p.parJour)+' F/jour).')+'</div>';
 }
 function planReset(px){ var el=planEl(px); if(!el) return; el.open=false; el.querySelector('.pl-pj').value=''; el.querySelector('.pl-deb').value=''; delete el.querySelector('.pl-deb').dataset.touched; el.querySelector('.planres').innerHTML='';
@@ -2123,6 +2129,39 @@ function restaurerBrouillon(){
   if(o.seg){ var b=document.querySelector('#segSaisie button[data-k="'+o.seg+'"]'); if(b && !b.classList.contains('hidden')) b.click(); }
   if(some) toast('↩️ Ta saisie en cours a été retrouvée : reprends la photo puis enregistre.');
 }
+
+/* ---------- dates en jj/mm/aa et heures en 24 h partout (champs de saisie compris) ---------- */
+var PROTO_VAL=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value');
+function dfxAff(iso, dt){ if(!iso) return ''; var m=String(iso).match(/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?/); if(!m) return '';
+  return m[3]+'/'+m[2]+'/'+m[1].slice(-2)+(dt? ' '+(m[4]||'00')+':'+(m[5]||'00') : ''); }
+function dfxLit(txt, dt){
+  var m=String(txt||'').trim().match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2}|\d{4})(?:\s+(\d{1,2})[:hH](\d{2}))?$/); if(!m) return null;
+  var y=m[3].length===2? 2000+(+m[3]) : +m[3], mo=+m[2], d=+m[1]; if(mo<1||mo>12||d<1||d>31) return null;
+  var iso=y+'-'+pad2(mo)+'-'+pad2(d); if(!dt) return iso;
+  var h=m[4]!==undefined? +m[4] : 12, mi=m[5]!==undefined? +m[5] : 0; if(h>23||mi>59) return null;
+  return iso+'T'+pad2(h)+':'+pad2(mi);
+}
+function dfx(el){
+  if(el.dataset.dfx) return; el.dataset.dfx='1';
+  var dt=el.type==='datetime-local', w=document.createElement('span'); w.className='dfx';
+  var tx=document.createElement('input'); tx.type='text'; tx.className='dtxt'; tx.inputMode='numeric'; tx.autocomplete='off';
+  tx.placeholder=dt?'jj/mm/aa hh:mm':'jj/mm/aa'; if(el.getAttribute('style')) tx.setAttribute('style', el.getAttribute('style'));
+  var bt=document.createElement('button'); bt.type='button'; bt.className='dbtn'; bt.textContent='📅'; bt.title='Choisir dans le calendrier';
+  el.parentNode.insertBefore(w, el); w.appendChild(tx); w.appendChild(bt); w.appendChild(el); el.classList.add('dnat'); el.tabIndex=-1;
+  var maj=function(){ tx.value=dfxAff(PROTO_VAL.get.call(el), dt); tx.classList.remove('bad'); };
+  Object.defineProperty(el,'value',{ configurable:true, get:function(){ return PROTO_VAL.get.call(el); }, set:function(v){ PROTO_VAL.set.call(el, v); maj(); } });
+  el.addEventListener('input', maj); el.addEventListener('change', maj);
+  tx.addEventListener('change', function(){
+    if(!tx.value.trim()){ PROTO_VAL.set.call(el,''); el.dispatchEvent(new Event('input',{bubbles:true})); el.dispatchEvent(new Event('change',{bubbles:true})); tx.classList.remove('bad'); return; }
+    var iso=dfxLit(tx.value, dt); if(!iso){ tx.classList.add('bad'); toast('Date à écrire ainsi : '+(dt?'jj/mm/aa hh:mm (ex. 21/10/26 14:30)':'jj/mm/aa (ex. 21/10/26)'), true); return; }
+    PROTO_VAL.set.call(el, iso); maj(); el.dispatchEvent(new Event('input',{bubbles:true})); el.dispatchEvent(new Event('change',{bubbles:true}));
+  });
+  bt.onclick=function(){ try{ el.showPicker(); }catch(e){ tx.focus(); } };
+  maj();
+}
+function dfxTout(root){ [].forEach.call((root||document).querySelectorAll('input[type="date"],input[type="datetime-local"]'), dfx); }
+dfxTout();
+new MutationObserver(function(ms){ ms.forEach(function(m){ [].forEach.call(m.addedNodes, function(n){ if(n.nodeType===1){ if(n.matches && n.matches('input[type="date"],input[type="datetime-local"]')) dfx(n); else if(n.querySelectorAll) dfxTout(n); } }); }); }).observe(document.body,{childList:true,subtree:true});
 
 /* ---------- téléphone de la maison : « Qui es-tu ? » ---------- */
 var PICK_C=['#0e7c66','#2d7dd2','#c2185b','#7b1fa2','#ef6c00','#00838f','#5d4037','#455a64'];
