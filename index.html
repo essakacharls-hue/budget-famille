@@ -13,17 +13,6 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#eef2f7; --card:#ffffff; --ink:#14213d; --muted:#5f6b85; --line:#e2e8f2;
@@ -1177,7 +1166,7 @@ function loadCarb(){ run('getCarburant', S.init.today.slice(0,7)).then(renderCar
 function renderCarb(c){
   S.carb=c; hintCarb();
   var st=c.stats, sa=c.statsAn, dec=function(v){ return v==null?'—':String(v).replace('.',','); };
-  $('c-kpis').innerHTML = kpi('Ce mois ('+st.recharges+' recharges)', st.montant) + kpi('Reste budget carburant', c.budgetMois-st.montant, true)
+  $('c-kpis').innerHTML = kpi('Budget carburant du mois', c.budgetMois) + kpi('Déjà dépensé ('+st.recharges+' recharge'+(st.recharges>1?'s':'')+(c.depMois>st.montant?' + taxi':'')+')', c.depMois!=null?c.depMois:st.montant) + kpi('Reste carburant ce mois', c.resteMois!=null?c.resteMois:c.budgetMois-st.montant, true)
     + '<div class="kpi"><div class="l">Litres ce mois'+(st.litresEstimes?' (dont '+dec(st.litresEstimes)+' estimés)':'')+'</div><div class="v">'+dec(st.litres)+' L</div></div>'
     + '<div class="kpi"><div class="l">Prix moyen'+(st.prixMoyen?' réel':' (officiel)')+'</div><div class="v">'+fmt(st.prixMoyen||c.prixRef)+' F/L</div></div>'
     + '<div class="kpi"><div class="l">Km parcourus ce mois</div><div class="v">'+(st.km?fmt(st.km):'—')+'</div></div>'
