@@ -179,6 +179,7 @@ details summary{cursor:pointer;color:var(--brand);font-weight:600;padding:4px 0}
 .jrl{border-top:1px dashed var(--line);padding:8px 0 4px;margin-top:6px}
 .st-ok{color:var(--pos);font-weight:700} .st-late{color:var(--coral);font-weight:800} .st-soon{color:#c47f12;font-weight:700}
 .hidden{display:none!important}
+.monthnav b small.mper{display:block;font-size:11px;font-weight:600;color:var(--muted,#667085);margin-top:1px;text-align:center;text-transform:none}
 </style>
 </head>
 <body>
@@ -627,7 +628,14 @@ var cls = function(n){ return n<0 ? 'neg' : (n>0 ? 'pos' : ''); };
 var esc = function(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); };
 var parseNum = function(s){ return parseFloat(String(s||'').replace(/[^\d,.-]/g,'').replace(',','.'))||0; };
 var MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
-var monthLabel = function(ym){ var p=ym.split('-'); return MOIS[+p[1]-1]+' '+p[0]; };
+var APP_V='v19'; // version de l'écran (même valeur que VERSION_SERVEUR dans Code.gs)
+var jPaie = function(){ return (S.init&&S.init.jourPaie)||1; };
+var curMois = function(){ return (S.init&&(S.init.moisCourant||S.init.today.slice(0,7)))||''; };
+var monthLabel = function(ym){ var p=ym.split('-'); return (jPaie()>1?'Paie fin ':'')+MOIS[+p[1]-1]+' '+p[0]; };
+/** « du 26/10/26 au 25/11/26 » pour un mois de paie */
+var periodeLabel = function(ym){ var J=jPaie(); if(J<=1) return ''; var p=ym.split('-'), a=new Date(+p[0],+p[1]-1,J), b=new Date(+p[0],+p[1],J-1);
+  var f=function(d){ return pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+'/'+String(d.getFullYear()).slice(-2); }; return 'du '+f(a)+' au '+f(b); };
+var setMoisLabel = function(id, ym){ var e=$(id); e.innerHTML=esc(monthLabel(ym))+(periodeLabel(ym)?'<small class="mper">'+periodeLabel(ym)+'</small>':''); };
 var dLabel = function(d){ if(!d) return ''; var p=String(d).slice(0,10).split('-'); return p[2]+'/'+p[1]+'/'+String(p[0]).slice(-2); };
 var mLabelShort = function(d){ if(!d) return ''; var p=d.split('-'); return MOIS[+p[1]-1].slice(0,4)+'. '+p[0]; };
 
@@ -759,7 +767,7 @@ function boot(){
   if(!CFG.api || !CFG.key){ showSetup(''); return; }
   $('bootErr').classList.add('hidden');
   run('getInit').catch(function(e){ bootError(e); return null; }).then(function(d){ if(!d) return; flushQueue(); $('bootErr').classList.add('hidden');
-    S.init=d; S.curMonth=d.today.slice(0,7); S.distMonth=S.curMonth; setFonds(d.fonds); applyPerms(d);
+    S.init=d; S.curMonth=d.moisCourant||d.today.slice(0,7); S.distMonth=S.curMonth; setFonds(d.fonds); applyPerms(d);
     opts($('f-det'), d.personnes.filter(function(p){return p!=='Foyer';}), d.user); opts($('f-src'), d.sources, 'Don');
     $('who').textContent = d.appareil? '📱 '+d.user+' · changer' : 'Connecté : '+d.user;
     $('who').style.cursor = d.appareil? 'pointer':'';
@@ -830,7 +838,7 @@ function bindDel(el, after){
   };
 }
 function loadRecents(){
-  call('getMois', S.init.today.slice(0,7)).then(function(m){ updateHero(m); $('recentList').innerHTML = itemsHTML(m.recents.slice(0,8), true); bindDel($('recentList'), loadRecents); });
+  call('getMois', curMois()).then(function(m){ updateHero(m); $('recentList').innerHTML = itemsHTML(m.recents.slice(0,8), true); bindDel($('recentList'), loadRecents); });
 }
 
 /* ---------- mois ---------- */
@@ -838,7 +846,7 @@ function shiftMonth(ym, d){ var p=ym.split('-'), dt=new Date(+p[0], +p[1]-1+d, 1
 $('mPrev').onclick=function(){ loadMois(shiftMonth(S.curMonth,-1)); };
 $('mNext').onclick=function(){ loadMois(shiftMonth(S.curMonth,1)); };
 function loadMois(ym){
-  S.curMonth=ym; $('mLabel').textContent=monthLabel(ym);
+  S.curMonth=ym; setMoisLabel('mLabel', ym);
   run('getMois', ym).then(function(m){
     var reste=m.budgetTotal-m.depenseTotal;
     $('mKpis').innerHTML =
@@ -1098,7 +1106,7 @@ function guessPerson(poste, pers){
   for(var i=0;i<pers.length;i++){ var p=pers[i]; if(p!=='Foyer' && poste.toLowerCase().indexOf(p.toLowerCase().split('-')[0])===0) return p; }
   return 'Foyer';
 }
-function loadDistrib(ym){ S.distMonth=ym; $('dLabel').textContent=monthLabel(ym); run('getDistribution', ym).then(renderDistrib); }
+function loadDistrib(ym){ S.distMonth=ym; setMoisLabel('dLabel', ym); run('getDistribution', ym).then(renderDistrib); }
 function renderDistrib(d){
   S.dist=d;
   var pct = d.total? Math.min(1, d.distribue/d.total) : 0;
@@ -1162,7 +1170,7 @@ function hintCarb(){
   $('c-hint').textContent=t.join(' · ');
 }
 ['c-montant','c-litres','c-km'].forEach(function(i){ $(i).addEventListener('input', hintCarb); });
-function loadCarb(){ run('getCarburant', S.init.today.slice(0,7)).then(renderCarb); }
+function loadCarb(){ run('getCarburant', curMois()).then(renderCarb); }
 function renderCarb(c){
   S.carb=c; hintCarb();
   var st=c.stats, sa=c.statsAn, dec=function(v){ return v==null?'—':String(v).replace('.',','); };
@@ -1495,7 +1503,7 @@ function updateHero(m){
   }
   var budget=m.budgetTotal+(m.dimeBudget||0), reste=budget-m.depenseTotal, p=budget? Math.min(1,m.depenseTotal/budget):0;
   $('hReste').textContent=fmt(reste)+' F'; $('hReste').style.color=reste<0?'#ffd2c4':'';
-  $('hSub').textContent='reste sur le budget de '+monthLabel(m.mois)+' · dépensé '+fmt(m.depenseTotal)+' F';
+  $('hSub').textContent='reste sur le budget « '+monthLabel(m.mois)+' »'+(periodeLabel(m.mois)?' ('+periodeLabel(m.mois).replace(/\/\d\d( |$)/g,'$1')+')':'')+' · dépensé '+fmt(m.depenseTotal)+' F';
   $('hRing').setAttribute('stroke-dasharray', Math.round(p*201)+' 201'); $('hRing').setAttribute('stroke', p>1||reste<0?'#ff8a65':p>.85?'#f2a93b':'#7ee0c0');
   $('hPct').textContent=Math.round(p*100)+'%';
 }
@@ -1535,6 +1543,7 @@ function renderSync(){
   var me=(S.init&&S.init.user)||'', autre=(sy||[]).filter(function(x){ return x.qui!==me; })[0];
   var l2=[]; if(autre) l2.push('dernière synchro : '+autre.qui+' ('+String(autre.quand).slice(0,5)+' '+String(autre.quand).slice(-5)+')');
   if(der && der.qui) l2.push('dernière modif : '+der.qui+' ('+String(der.quand).slice(-5)+')');
+  var sv=S.init&&S.init.version; l2.push('version appli '+APP_V+(S.init? (sv===APP_V? ' · serveur '+sv+' ✓' : ' · ⚠ serveur '+(sv||'ancien')+' : fais « Nouvelle version » dans Apps Script') : ''));
   $('hSyncTxt').innerHTML=esc(txt)+(l2.length?'<br><span style="font-weight:600;opacity:.9">'+esc(l2.join(' · '))+'</span>':'');
   el.title = (sy||[]).map(function(x){ return x.qui+' : '+x.quand; }).join('\n') || 'Appuie pour synchroniser';
 }
@@ -1542,7 +1551,7 @@ $('hSync').onclick=function(){
   var el=this; if(!navigator.onLine){ toast('Pas de réseau : synchronisation impossible pour le moment', true); return; }
   el.classList.add('busy'); flushQueue();
   var act=document.querySelector('nav.tabs button.on');
-  call('getMois', (S.init&&S.init.today.slice(0,7))||'').then(function(m){ updateHero(m); if(act) act.click(); toast('🟢 Connecté au serveur – données à jour'); })
+  call('getMois', curMois()).then(function(m){ updateHero(m); if(act) act.click(); toast('🟢 Connecté au serveur – données à jour'); })
     .catch(function(e){ toast(e.message||'Échec de la synchronisation', true); }).finally(function(){ el.classList.remove('busy'); });
 };
 window.addEventListener('online', renderSync); window.addEventListener('offline', renderSync);
@@ -2177,7 +2186,7 @@ $('rc-save').onclick=function(){
   if(!o.montant) return toast('Indique le montant reçu',true);
   var b=this; b.disabled=true;
   run('recevoirArgent', o).then(function(r){ toast(r.message); $('rc-montant').value=''; $('rc-objet').value=''; planReset('rc');
-    return call('getInit').then(function(d){ S.init.mesAvances=d.mesAvances; applyPerms(d); updateHero && call('getMois', S.init.today.slice(0,7)).then(updateHero); document.querySelector('#segSaisie button[data-k="dep"]').click(); }); })
+    return call('getInit').then(function(d){ S.init.mesAvances=d.mesAvances; applyPerms(d); updateHero && call('getMois', curMois()).then(updateHero); document.querySelector('#segSaisie button[data-k="dep"]').click(); }); })
     .finally(function(){ b.disabled=false; });
 };
 
