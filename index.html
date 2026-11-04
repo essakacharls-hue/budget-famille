@@ -419,7 +419,7 @@ details summary{cursor:pointer;color:var(--brand);font-weight:600;padding:4px 0}
     <button class="btn" id="x-all" style="margin-top:8px">📘 Exporter tout le classeur (format actuel)</button>
     <label class="btn alt" for="x-imp" style="margin-top:8px;display:block;text-align:center;cursor:pointer">📥 Importer mes modifications (fichier Excel)</label>
     <input type="file" id="x-imp" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
-    <p class="muted" style="margin:6px 0 0">Exporte le classeur, modifie-le dans Excel (BUDGET, DETTES, EVENEMENTS, AJUSTEMENTS, PARAMETRES, MES SOLDES), puis importe-le ici : seules les cases modifiables sont recopiées, les formules et les journaux ne bougent pas.</p>
+    <p class="muted" style="margin:6px 0 0">Exporte le classeur, modifie-le dans Excel (BUDGET, DETTES, EVENEMENTS, PARAMETRES et les cases jaunes ✎ de MES ANNÉES), puis importe-le ici : seules les cases modifiables sont recopiées, les formules et les journaux ne bougent pas.</p>
     <div id="x-imp-res" class="muted" style="margin-top:8px"></div>
     <p class="muted" style="margin:6px 0 0">Tous les onglets de BUDGET_FAMILLE_DIBAO (PARAMETRES, BUDGET, DEPENSES, PROJECTION…) avec leurs formules, en .xlsx. Les clés et mots de passe ne sont pas dans le fichier.</p>
     <button class="btn" id="x-cl" style="margin-top:8px">📗 Exporter au format de mon ancien fichier</button>
@@ -642,7 +642,7 @@ var cls = function(n){ return n<0 ? 'neg' : (n>0 ? 'pos' : ''); };
 var esc = function(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); };
 var parseNum = function(s){ return parseFloat(String(s||'').replace(/[^\d,.-]/g,'').replace(',','.'))||0; };
 var MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
-var APP_V='v35'; // version de l'écran (même valeur que VERSION_SERVEUR dans Code.gs)
+var APP_V='v37'; // version de l'écran (même valeur que VERSION_SERVEUR dans Code.gs)
 var jPaie = function(){ return (S.init&&S.init.jourPaie)||1; };
 var curMois = function(){ return (S.init&&(S.init.moisCourant||S.init.today.slice(0,7)))||''; };
 var monthLabel = function(ym){ var p=ym.split('-'); return (jPaie()>1?'Paie fin ':'')+MOIS[+p[1]-1]+' '+p[0]; };
