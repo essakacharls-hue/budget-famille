@@ -245,7 +245,13 @@ details summary{cursor:pointer;color:var(--brand);font-weight:600;padding:4px 0}
     <input id="d-montant" class="amount" inputmode="numeric" placeholder="0" autocomplete="off">
     <label>Catégorie</label>
     <div class="chips" id="d-chips"></div>
-    <select id="d-cat" style="margin-top:8px"></select>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:8px"><select id="d-cat" style="flex:1"></select><button type="button" class="btn small ghost" id="d-newcat" title="Créer une catégorie" style="white-space:nowrap">＋ Nouvelle</button></div>
+    <div id="d-catform" class="hidden" style="margin-top:8px;padding:10px 12px;border:1px dashed var(--line);border-radius:12px;background:var(--card)">
+      <label for="nc-nom">Nom de la nouvelle catégorie</label><input id="nc-nom" placeholder="ex. Réparation voiture, Cadeaux, Gaz…" autocomplete="off">
+      <div class="row"><div><label for="nc-grp">Groupe</label><select id="nc-grp"></select></div>
+        <div><label for="nc-mt">Budget par mois (facultatif)</label><input id="nc-mt" inputmode="numeric" placeholder="0"></div></div>
+      <div class="row" style="margin-top:8px"><button type="button" class="btn small" id="nc-ok">Créer la catégorie</button><button type="button" class="btn small ghost" id="nc-x">Annuler</button></div>
+    </div>
     <div id="d-av-wrap" class="hidden"><label for="d-avance">Argent reçu utilisé</label><select id="d-avance"></select></div>
     <div class="row" id="d-row-qui">
       <div><label for="d-benef">Pour qui</label><select id="d-benef"></select></div>
@@ -636,7 +642,7 @@ var cls = function(n){ return n<0 ? 'neg' : (n>0 ? 'pos' : ''); };
 var esc = function(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); };
 var parseNum = function(s){ return parseFloat(String(s||'').replace(/[^\d,.-]/g,'').replace(',','.'))||0; };
 var MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
-var APP_V='v33'; // version de l'écran (même valeur que VERSION_SERVEUR dans Code.gs)
+var APP_V='v35'; // version de l'écran (même valeur que VERSION_SERVEUR dans Code.gs)
 var jPaie = function(){ return (S.init&&S.init.jourPaie)||1; };
 var curMois = function(){ return (S.init&&(S.init.moisCourant||S.init.today.slice(0,7)))||''; };
 var monthLabel = function(ym){ var p=ym.split('-'); return (jPaie()>1?'Paie fin ':'')+MOIS[+p[1]-1]+' '+p[0]; };
@@ -782,12 +788,7 @@ function boot(){
     if(d.fuseau && S.perms && S.perms.admin && !S.tzWarned){ S.tzWarned=1; setTimeout(function(){ toast('⚠ Fuseau horaire incorrect ('+d.fuseau+') : mets Douala dans Apps Script › ⚙ Paramètres du projet, puis relance installer.', true); }, 1500); }
     S.appareil=d.appareil||''; ['rc-who','dp-who'].forEach(function(i){ $(i).innerHTML = d.appareil? '<span>👤 C\'est <b>'+esc(d.user)+'</b> qui note</span><button type="button" class="chg">Ce n\'est pas moi</button>' : ''; $(i).classList.toggle('hidden', !d.appareil); });
     opts($('rc-de'), d.personnes.filter(function(p){ return p!=='Foyer' && p!==d.user; }), 'Thierry'); opts($('rc-cat'), d.categories.map(function(c){return c.nom;}), 'Achats ménage'); $('rc-date').value=d.today;
-    var groups={}, catOpts=[];
-    d.categories.forEach(function(c){ (groups[c.groupe]=groups[c.groupe]||[]).push(c.nom); });
-    var html='<option value="">— choisir —</option>';
-    Object.keys(groups).forEach(function(g){ html+='<optgroup label="'+esc(g)+'">'+groups[g].map(function(n){return '<option>'+esc(n)+'</option>';}).join('')+'</optgroup>'; });
-    $('d-cat').innerHTML=html;
-    opts($('a-cat'), d.categories.map(function(c){return c.nom;}), 'Achats ménage');
+    renderCats(d.categories);
     $('d-chips').innerHTML = d.frequentes.map(function(c){ return '<button class="chip" type="button" data-c="'+esc(c)+'">'+catIcon(c).e+' '+esc(c)+'</button>'; }).join('');
     opts($('d-benef'), d.personnes, 'Foyer'); opts($('r-pers'), d.personnes, d.user);
     opts($('a-qui'), d.personnes.filter(function(p){return p!=='Foyer';}), 'Gabriel');
@@ -797,6 +798,29 @@ function boot(){
     loadRecents(); restaurerBrouillon();
   });
 }
+/** Listes de catégories (dépense, avance, argent reçu) ; garde le choix en cours. */
+function renderCats(cats, choisir){
+  S.init.categories=cats;
+  var groups={}, cur=choisir||$('d-cat').value;
+  cats.forEach(function(c){ (groups[c.groupe||'Divers']=groups[c.groupe||'Divers']||[]).push(c.nom); });
+  var html='<option value="">— choisir —</option>';
+  Object.keys(groups).forEach(function(g){ html+='<optgroup label="'+esc(g)+'">'+groups[g].map(function(n){return '<option'+(n===cur?' selected':'')+'>'+esc(n)+'</option>';}).join('')+'</optgroup>'; });
+  $('d-cat').innerHTML=html;
+  var noms=cats.map(function(c){return c.nom;});
+  opts($('a-cat'), noms, $('a-cat').value||'Achats ménage'); opts($('rc-cat'), noms, $('rc-cat').value||'Achats ménage');
+  var gs=Object.keys(groups).filter(function(g){ return ['Dîme','Prélèvements'].indexOf(g)<0; });
+  opts($('nc-grp'), gs, gs.indexOf('Maison')>=0?'Maison':gs[0]);
+  $('d-newcat').classList.toggle('hidden', !(S.perms && S.perms.tout_voir));
+}
+$('d-newcat').onclick=function(){ $('d-catform').classList.toggle('hidden'); if(!$('d-catform').classList.contains('hidden')) $('nc-nom').focus(); };
+$('nc-x').onclick=function(){ $('d-catform').classList.add('hidden'); };
+$('nc-ok').onclick=function(){
+  var nom=$('nc-nom').value.trim(); if(nom.length<2){ toast('Donne un nom à la catégorie', true); return; }
+  run('addCategorie', {nom:nom, groupe:$('nc-grp').value, montant:parseNum($('nc-mt').value)}).then(function(r){
+    toast(r.message); renderCats(r.categories, r.nom); $('d-cat').value=r.nom; $('d-cat').dispatchEvent(new Event('change'));
+    $('nc-nom').value=''; $('nc-mt').value=''; $('d-catform').classList.add('hidden');
+  }).catch(function(){});
+};
 ['d-montant','r-montant','a-montant','c-montant','c-km'].forEach(function(i){ amountInput($(i)); });
 $('d-chips').addEventListener('click', function(e){
   var b=e.target.closest('.chip'); if(!b) return;
