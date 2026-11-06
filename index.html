@@ -422,8 +422,6 @@ details summary{cursor:pointer;color:var(--brand);font-weight:600;padding:4px 0}
     <p class="muted" style="margin:6px 0 0">Exporte le classeur, modifie-le dans Excel (BUDGET, DETTES, EVENEMENTS, PARAMETRES et les cases jaunes ✎ de MES ANNÉES), puis importe-le ici : seules les cases modifiables sont recopiées, les formules et les journaux ne bougent pas.</p>
     <div id="x-imp-res" class="muted" style="margin-top:8px"></div>
     <p class="muted" style="margin:6px 0 0">Tous les onglets de BUDGET_FAMILLE_DIBAO (PARAMETRES, BUDGET, DEPENSES, PROJECTION…) avec leurs formules, en .xlsx. Les clés et mots de passe ne sont pas dans le fichier.</p>
-    <button class="btn" id="x-cl" style="margin-top:8px">📗 Exporter au format de mon ancien fichier</button>
-    <p class="muted" style="margin:6px 0 0">Blocs « FIN OCT 2026 » comme dans BUDGET_25-30 : DEBIT, CREDIT, dîme, déficit, entrées, relicat – du mois affiché jusqu'à fin 2028, avec le réel saisi pour les mois passés.</p>
     <div id="x-list" style="margin-top:8px"></div>
   </div>
   <div class="card"><h2><span class="hi" style="background:#fdeed4">🗂️</span>Bilans annuels (exports conservés)</h2>
@@ -642,7 +640,7 @@ var cls = function(n){ return n<0 ? 'neg' : (n>0 ? 'pos' : ''); };
 var esc = function(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); };
 var parseNum = function(s){ return parseFloat(String(s||'').replace(/[^\d,.-]/g,'').replace(',','.'))||0; };
 var MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
-var APP_V='v52'; // version de l'écran (même valeur que VERSION_SERVEUR dans Code.gs)
+var APP_V='v53'; // version de l'écran (même valeur que VERSION_SERVEUR dans Code.gs)
 var jPaie = function(){ return (S.init&&S.init.jourPaie)||1; };
 var curMois = function(){ return (S.init&&(S.init.moisCourant||S.init.today.slice(0,7)))||''; };
 var monthLabel = function(ym){ var p=ym.split('-'); return (jPaie()>1?'Paie fin ':'')+MOIS[+p[1]-1]+' '+p[0]; };
@@ -1198,11 +1196,6 @@ $('x-all').onclick=function(){
   var b=this, t=b.textContent; b.disabled=true; b.textContent='⏳ Création du fichier… (1 à 2 minutes)';
   run('exporterClasseur').then(function(r){ toast(r.message); renderMensuels(r.exports); if(r.download) window.open(r.download,'_blank'); })
     .finally(function(){ b.disabled=false; b.textContent=t; });
-};
-$('x-cl').onclick=function(){
-  var b=this; b.disabled=true; b.textContent='⏳ Création du fichier… (1 à 2 minutes)';
-  run('exporterClassique', S.curMonth).then(function(r){ toast(r.message); renderMensuels(r.exports); if(r.download) window.open(r.download,'_blank'); })
-    .finally(function(){ b.disabled=false; b.textContent='📗 Exporter au format de mon ancien fichier'; });
 };
 $('x-go').onclick=function(){
   var b=this; b.disabled=true;
