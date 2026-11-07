@@ -640,7 +640,7 @@ var cls = function(n){ return n<0 ? 'neg' : (n>0 ? 'pos' : ''); };
 var esc = function(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); };
 var parseNum = function(s){ return parseFloat(String(s||'').replace(/[^\d,.-]/g,'').replace(',','.'))||0; };
 var MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
-var APP_V='v67'; // version de l'écran (même valeur que VERSION_SERVEUR dans Code.gs)
+var APP_V='v68'; // version de l'écran (même valeur que VERSION_SERVEUR dans Code.gs)
 var jPaie = function(){ return (S.init&&S.init.jourPaie)||1; };
 var curMois = function(){ return (S.init&&(S.init.moisCourant||S.init.today.slice(0,7)))||''; };
 var monthLabel = function(ym){ var p=ym.split('-'); return (jPaie()>1?'Paie fin ':'')+MOIS[+p[1]-1]+' '+p[0]; };
